@@ -14,4 +14,6 @@ public interface UserService {
     void changePassword(String email,String newPassword,String repeatPassword);
 
     void deleteAccount(String email);
+
+    void verify(String email, String code);
 }

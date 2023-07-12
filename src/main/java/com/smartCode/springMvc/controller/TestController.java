@@ -15,7 +15,7 @@ public class TestController {
 
     @RequestMapping(path = "/test2", method = RequestMethod.GET)
     public ModelAndView test2() {
-        ModelAndView modelAndView = new ModelAndView("/Secure/home");
+        ModelAndView modelAndView = new ModelAndView("/secure/home");
         modelAndView.addObject("message", "assfasdasdsad");
         return modelAndView;
     }

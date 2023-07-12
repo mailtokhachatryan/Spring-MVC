@@ -2,15 +2,17 @@ package com.smartCode.springMvc.service.user.impl;
 
 import com.smartCode.springMvc.exceptions.UserNotFoundException;
 import com.smartCode.springMvc.exceptions.ValidationException;
+import com.smartCode.springMvc.exceptions.VerificationException;
 import com.smartCode.springMvc.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import com.smartCode.springMvc.repository.UserRepository;
+import com.smartCode.springMvc.service.email.EmailService;
 import com.smartCode.springMvc.service.user.UserService;
+import com.smartCode.springMvc.util.RandomGenerator;
 import com.smartCode.springMvc.util.constants.Message;
 import com.smartCode.springMvc.util.encoder.MD5Encoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service  // name = userServiceImpl
 public class UserServiceImpl implements UserService {
@@ -18,37 +20,40 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
-    @Transactional(
-            readOnly = false,
-            propagation = Propagation.REQUIRED)
+    @Transactional
     public void register(User user) {
-        try {
-            validationForRegistration(user);
-            user.setPassword(MD5Encoder.encode(user.getPassword()));
-
-            userRepository.save(user);
-
-            throw new RuntimeException();
-
-            //sending email
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        validationForRegistration(user);
+        String code = RandomGenerator.generateNumericString(6);
+        user.setPassword(MD5Encoder.encode(user.getPassword()));
+        user.setCode(code);
+        userRepository.save(user);
+        emailService.sendSimpleMessage(user.getEmail(), "Verification", "Your verification code is " + code);
     }
 
     @Override
     @Transactional(readOnly = true)
     public User getUser(Long id) {
         String mail = "test@gmail.com";
-        User byEmail = userRepository.findByEmail(mail);
-        return byEmail;
+        return userRepository.findByEmail(mail);
     }
 
     @Override
     public void login(String email, String password) throws Exception {
         validationForLogin(email, password);
         User loginedUser = userRepository.findByEmail(email);
+
+        if (loginedUser == null) {
+            throw new UserNotFoundException(Message.USER_NOT_FOUNT);
+        }
+
+        if (!loginedUser.isVerified()) {
+            throw new VerificationException("Verify your account");
+        }
+
         if (!loginedUser.getPassword().equals(MD5Encoder.encode(password))) {
             throw new ValidationException(Message.WRONG_EMAIL_OR_PASSWORD);
         }
@@ -76,11 +81,26 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteAccount(String email) {
         try {
-            Long id = userRepository.findByEmail(email).getId();
-            userRepository.findById(id);
+            User byEmail = userRepository.findByEmail(email);
+            userRepository.delete(byEmail);
         } catch (Exception e) {
             throw new UserNotFoundException(Message.USER_NOT_FOUNT);
         }
+    }
+
+    @Override
+    @Transactional
+    public void verify(String email, String code) {
+        User user = userRepository.findByEmail(email);
+
+        if (user == null) {
+            throw new UserNotFoundException(Message.USER_NOT_FOUNT);
+        }
+        if (!user.getCode().equals(code)) {
+            throw new ValidationException("Code is incorrect");
+        }
+        user.setVerified(true);
+        userRepository.save(user);
     }
 
     private void validationForRegistration(User user) {

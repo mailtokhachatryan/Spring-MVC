@@ -1,5 +1,6 @@
 package com.smartCode.springMvc.controller;
 
+import com.smartCode.springMvc.exceptions.VerificationException;
 import com.smartCode.springMvc.model.User;
 import com.smartCode.springMvc.service.user.UserService;
 import com.smartCode.springMvc.util.constants.Parameter;
@@ -19,6 +20,30 @@ public class AccountController {
 
     @Autowired
     public UserService userService;
+
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ModelAndView register(@RequestParam String name,
+                                 @RequestParam String lastname,
+                                 @RequestParam Double balance,
+                                 @RequestParam String email,
+                                 @RequestParam String password,
+                                 @RequestParam int age) {
+        try {
+            User user = new User();
+            user.setName(name);
+            user.setLastname(lastname);
+            user.setAge(age);
+            user.setEmail(email);
+            user.setBalance(balance);
+            user.setPassword(password);
+            userService.register(user);
+            return new ModelAndView(Path.VERIFICATION_PATH);
+        } catch (Exception e) {
+            ModelAndView modelAndView = new ModelAndView(Path.REGISTER_PATH);
+            modelAndView.addObject(Parameter.MESSAGE_ATTRIBUTE, e.getMessage());
+            return modelAndView;
+        }
+    }
 
     @RequestMapping(path = "/", method = RequestMethod.GET)
     public ModelAndView start(@CookieValue(name = Parameter.REMEMBER_COOKIE, required = false) Cookie rememberCookie,
@@ -58,6 +83,10 @@ public class AccountController {
             }
             session.setAttribute(Parameter.EMAIL_PARAMETER, email);
             return new ModelAndView(Path.HOME_PATH);
+        } catch (VerificationException e) {
+            ModelAndView modelAndView = new ModelAndView(Path.VERIFICATION_PATH);
+            modelAndView.addObject(Parameter.MESSAGE_ATTRIBUTE, e.getMessage());
+            return modelAndView;
         } catch (Exception e) {
             ModelAndView modelAndView = new ModelAndView(Path.INDEX_PATH);
             modelAndView.addObject(Parameter.MESSAGE_ATTRIBUTE, e.getMessage());
@@ -65,35 +94,9 @@ public class AccountController {
         }
     }
 
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public ModelAndView register(@RequestParam String name,
-                                 @RequestParam String lastname,
-                                 @RequestParam Double balance,
-                                 @RequestParam String email,
-                                 @RequestParam String password,
-                                 @RequestParam int age) {
-
-        User user = new User();
-
-        try {
-            user.setName(name);
-            user.setLastname(lastname);
-            user.setAge(age);
-            user.setEmail(email);
-            user.setBalance(balance);
-            user.setPassword(password);
-            userService.register(user);
-            return new ModelAndView(Path.VERIFICATION_PATH);
-        } catch (Exception e) {
-            ModelAndView modelAndView = new ModelAndView(Path.REGISTER_PATH);
-            modelAndView.addObject(Parameter.MESSAGE_ATTRIBUTE, e.getMessage());
-            return modelAndView;
-        }
-    }
-
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
     public ModelAndView verify(@RequestParam String email,
-                                 @RequestParam String code) {
+                               @RequestParam String code) {
 
         try {
             userService.verify(email, code);

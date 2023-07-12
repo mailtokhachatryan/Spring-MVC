@@ -13,7 +13,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Login Page</title>
+    <title>Verification Page</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
 
@@ -136,7 +136,7 @@
 
 <div class="container">
     <div class="verification form">
-        <header>Login</header>
+        <header>Verification</header>
         <form method="post" action="/verify">
             <input type="email" placeholder="Enter your email" name="email">
             <input type="text" placeholder="Enter your code" name="code">

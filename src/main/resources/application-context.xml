@@ -11,8 +11,8 @@
 
     <context:component-scan base-package="com.smartCode.springMvc"/>
     <jpa:repositories base-package="com.smartCode.springMvc.repository"/>
+    <tx:annotation-driven transaction-manager="transactionManager" />
 
-    <tx:annotation-driven/>
 
     <bean name="dataSource" class="org.springframework.jdbc.datasource.SingleConnectionDataSource"  >
         <property name="url" value="jdbc:postgresql://localhost:5432/group1"/>
@@ -41,21 +41,5 @@
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
-
-<!--    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">-->
-<!--        <property name="host" value="smtp.gmail.com"/>-->
-<!--        <property name="port" value="587"/>-->
-<!--        <property name="username" value="tt862833@gmail.com"/>-->
-<!--        <property name="password" value="tt862833@#$"/>-->
-<!--        <property name="javaMailProperties">-->
-<!--            <props>-->
-<!--                <prop key="mail.transport.protocol">smtp</prop>-->
-<!--                <prop key="mail.smtp.auth">true</prop>-->
-<!--                <prop key="mail.smtp.starttls.enable">true</prop>-->
-<!--                <prop key="mail.debug">true</prop>-->
-<!--                <prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>-->
-<!--            </props>-->
-<!--        </property>-->
-<!--    </bean>-->
 
 </beans>

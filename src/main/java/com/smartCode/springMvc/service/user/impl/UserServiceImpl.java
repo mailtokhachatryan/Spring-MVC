@@ -11,6 +11,7 @@ import com.smartCode.springMvc.service.user.UserService;
 import com.smartCode.springMvc.util.RandomGenerator;
 import com.smartCode.springMvc.util.constants.Message;
 import com.smartCode.springMvc.util.encoder.MD5Encoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,15 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static java.util.Objects.nonNull;
 
+@Slf4j
 @Service  // name = userServiceImpl
 public class UserServiceImpl implements UserService {
+
+//    Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
 
     @Autowired
     private UserRepository userRepository;
@@ -57,10 +62,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void login(String email, String password) throws Exception {
+    public void login(String email, String password) {
         validationForLogin(email, password);
         User loginedUser = userRepository.findByEmail(email);
-
         if (loginedUser == null) {
             throw new UserNotFoundException(Message.USER_NOT_FOUNT);
         }
@@ -155,6 +159,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<User> filter(UserFilter userFilter) {
+        log.info("filtering users");
         return userRepository.findAll(filtration(userFilter));
     }
 

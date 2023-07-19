@@ -7,6 +7,7 @@ import com.smartCode.springMvc.util.constants.Parameter;
 import com.smartCode.springMvc.util.constants.Path;
 import com.smartCode.springMvc.util.encoder.AESManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -19,9 +20,11 @@ import javax.servlet.http.HttpSession;
 public class AccountController {
 
     @Autowired
+    @Qualifier("userServiceImpl")
     public UserService userService;
 
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @PostMapping(value = "/register")
+//    @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ModelAndView register(@RequestParam String name,
                                  @RequestParam String lastname,
                                  @RequestParam Double balance,
@@ -45,7 +48,7 @@ public class AccountController {
         }
     }
 
-    @RequestMapping(path = "/", method = RequestMethod.GET)
+    @GetMapping(path = "/")
     public ModelAndView start(@CookieValue(name = Parameter.REMEMBER_COOKIE, required = false) Cookie rememberCookie,
                               HttpSession session,
                               HttpServletResponse response) {

@@ -20,7 +20,7 @@ public class SecureAccountController {
     public UserService userService;
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logout(HttpSession session,
+    public ModelAndView logout(HttpSession session,
                          HttpServletResponse resp,
                          @CookieValue(name = Parameter.REMEMBER_COOKIE, required = false) Cookie cookie) {
         session.invalidate();
@@ -28,7 +28,7 @@ public class SecureAccountController {
             cookie.setMaxAge(0);
             resp.addCookie(cookie);
         }
-        return Path.INDEX_PATH;
+        return new ModelAndView(Path.INDEX_PATH);
     }
 
 

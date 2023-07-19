@@ -1,11 +1,15 @@
 package com.smartCode.springMvc.service.user;
 
 
+import com.smartCode.springMvc.dto.UserFilter;
 import com.smartCode.springMvc.model.User;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public interface UserService {
 
-    void register(User user) ;
+    User register(User user) ;
 
     User getUser(Long id);
 
@@ -16,4 +20,13 @@ public interface UserService {
     void deleteAccount(String email);
 
     void verify(String email, String code);
+
+    List<User> getAllUsers();
+
+    User update(Long id, User user);
+
+    @Transactional
+    User updatePartially(Long id, User updatedUser);
+
+    List<User> filter(UserFilter userFilter);
 }

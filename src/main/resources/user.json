@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "User1",
+    "lastname": "lastname",
+    "balance": 100.0,
+    "email": "email@com",
+    "password": "pass",
+    "code": "54654",
+    "age": 28,
+    "verified": true
+  },
+  {
+    "id": 1,
+    "name": "User1",
+    "lastname": "lastname",
+    "balance": 100.0,
+    "email": "email@com",
+    "password": "pass",
+    "code": "54654",
+    "age": 28,
+    "verified": true
+  },
+  {
+    "id": 1,
+    "name": "User1",
+    "lastname": "lastname",
+    "balance": 100.0,
+    "email": "email@com",
+    "password": "pass",
+    "code": "54654",
+    "age": 28,
+    "verified": true
+  }
+]

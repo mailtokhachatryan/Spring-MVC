@@ -1,5 +1,6 @@
 package com.smartCode.springMvc.service.user.impl;
 
+import com.smartCode.springMvc.dto.UserFilter;
 import com.smartCode.springMvc.exceptions.UserNotFoundException;
 import com.smartCode.springMvc.exceptions.ValidationException;
 import com.smartCode.springMvc.exceptions.VerificationException;
@@ -11,8 +12,17 @@ import com.smartCode.springMvc.util.RandomGenerator;
 import com.smartCode.springMvc.util.constants.Message;
 import com.smartCode.springMvc.util.encoder.MD5Encoder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Objects.nonNull;
 
 @Service  // name = userServiceImpl
 public class UserServiceImpl implements UserService {
@@ -23,22 +33,27 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EmailService emailService;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Override
     @Transactional
-    public void register(User user) {
+    public User register(User user) {
+
+        entityManager.flush();
         validationForRegistration(user);
         String code = RandomGenerator.generateNumericString(6);
         user.setPassword(MD5Encoder.encode(user.getPassword()));
         user.setCode(code);
-        userRepository.save(user);
+        User save = userRepository.save(user);
         emailService.sendSimpleMessage(user.getEmail(), "Verification", "Your verification code is " + code);
+        return save;
     }
 
     @Override
     @Transactional(readOnly = true)
     public User getUser(Long id) {
-        String mail = "test@gmail.com";
-        return userRepository.findByEmail(mail);
+        return userRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -101,6 +116,72 @@ public class UserServiceImpl implements UserService {
         }
         user.setVerified(true);
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public User update(Long id, User updatedUser) {
+        User user1 = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+        user1.setEmail(updatedUser.getEmail());
+        user1.setName(updatedUser.getName());
+        user1.setLastname(updatedUser.getLastname());
+        user1.setAge(updatedUser.getAge());
+        user1.setPassword(updatedUser.getPassword());
+        user1.setBalance(updatedUser.getBalance());
+        return userRepository.save(user1);
+    }
+
+    @Override
+    @Transactional
+    public User updatePartially(Long id, User updatedUser) {
+        User user1 = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        user1.setEmail(nonNull(updatedUser.getEmail()) ? updatedUser.getEmail() : user1.getEmail());
+        user1.setName(nonNull(updatedUser.getName()) ? updatedUser.getName() : user1.getName());
+        user1.setLastname(nonNull(updatedUser.getLastname()) ? updatedUser.getLastname() : user1.getLastname());
+        user1.setAge(updatedUser.getAge() != 0 ? updatedUser.getAge() : user1.getAge());
+        user1.setPassword(nonNull(updatedUser.getPassword()) ? updatedUser.getPassword() : user1.getPassword());
+        user1.setBalance(updatedUser.getBalance() != 0 ? updatedUser.getBalance() : user1.getBalance());
+
+        return userRepository.save(user1);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> filter(UserFilter userFilter) {
+        return userRepository.findAll(filtration(userFilter));
+    }
+
+
+    private Specification<User> filtration(UserFilter userFilter) {
+        return Specification.where((root, criteriaQuery, criteriaBuilder) -> {
+
+            var predicates = new ArrayList<Predicate>();
+            Predicate filterPredicate;
+
+            if (nonNull(userFilter.getIsVerified())) {
+                filterPredicate = criteriaBuilder.equal(root.get("isVerified"), userFilter.getIsVerified());
+                predicates.add(filterPredicate);
+            }
+            if (nonNull(userFilter.getStartAge())) {
+                filterPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get("age"), userFilter.getStartAge());
+                predicates.add(filterPredicate);
+            }
+            if (nonNull(userFilter.getEndAge())) {
+                filterPredicate = criteriaBuilder.lessThanOrEqualTo(root.get("age"), userFilter.getEndAge());
+                predicates.add(filterPredicate);
+            }
+
+            criteriaQuery.distinct(true);
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        });
+
     }
 
     private void validationForRegistration(User user) {

@@ -1,0 +1,11 @@
+<User>
+    <id>1</id>
+    <name>User1</name>
+    <lastname>lastname</lastname>
+    <balance>100.0</balance>
+    <email>email@com</email>
+    <password>pass</password>
+    <code>54654</code>
+    <age>28</age>
+    <verified>true</verified>
+</User>

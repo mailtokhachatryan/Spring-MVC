@@ -18,7 +18,6 @@ public class EmailService {
         message.setText(text);
         message.setFrom("testfortest891@gmail.com");
         mailSender.send(message);
-
     }
 
 }
